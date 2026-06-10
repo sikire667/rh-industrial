@@ -3,106 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Outil RH - Gestion des Absences</title>
+  <title>Outil RH Complet</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>Outil RH - Gestion des Absences</h1>
-    <p>Version test gratuite - HTML / CSS / JavaScript</p>
+    <h1>Outil RH</h1>
+    <p>Gestion salariés, absences, évaluations et historique</p>
   </header>
 
   <main>
+    <section class="stats">
+      <div><strong id="totalSalaries">0</strong><span>Salariés</span></div>
+      <div><strong id="totalAbsences">0</strong><span>Absences</span></div>
+      <div><strong id="totalEvaluations">0</strong><span>Évaluations</span></div>
+      <div><strong id="moyenneNote">0</strong><span>Moyenne</span></div>
+    </section>
+
+    <section class="card">
+      <h2>Ajouter un salarié</h2>
+      <form id="salarieForm">
+        <div class="grid">
+          <input id="nomSalarie" placeholder="Nom complet" required>
+          <input id="matriculeSalarie" placeholder="Matricule" required>
+          <input id="posteSalarie" placeholder="Poste" required>
+          <input id="departementSalarie" placeholder="Département">
+          <input id="dateEmbauche" type="date">
+          <select id="statutSalarie">
+            <option>Actif</option>
+            <option>Inactif</option>
+            <option>En congé</option>
+          </select>
+        </div>
+        <button type="submit">Ajouter salarié</button>
+      </form>
+    </section>
+
     <section class="card">
       <h2>Ajouter une absence</h2>
       <form id="absenceForm">
         <div class="grid">
-          <label>Nom du salarié
-            <input type="text" id="nom" required placeholder="Ex: Khamer Yassine" />
-          </label>
-
-          <label>Matricule
-            <input type="text" id="matricule" required placeholder="Ex: M123456" />
-          </label>
-
-          <label>Type d'absence
-            <select id="type" required>
-              <option value="">Choisir</option>
-              <option>Congé annuel</option>
-              <option>Maladie</option>
-              <option>Absence non justifiée</option>
-              <option>Congé sans solde</option>
-              <option>Retard</option>
-            </select>
-          </label>
-
-          <label>Date début
-            <input type="date" id="dateDebut" required />
-          </label>
-
-          <label>Date fin
-            <input type="date" id="dateFin" required />
-          </label>
-
-          <label>Statut
-            <select id="statut" required>
-              <option>En attente</option>
-              <option>Validée</option>
-              <option>Refusée</option>
-            </select>
-          </label>
+          <input id="absenceNom" placeholder="Nom salarié" required>
+          <input id="absenceMatricule" placeholder="Matricule" required>
+          <select id="absenceType" required>
+            <option value="">Type d'absence</option>
+            <option>Congé annuel</option>
+            <option>Maladie</option>
+            <option>Absence non justifiée</option>
+            <option>Congé sans solde</option>
+            <option>Retard</option>
+          </select>
+          <input id="absenceDebut" type="date" required>
+          <input id="absenceFin" type="date" required>
+          <select id="absenceStatut">
+            <option>En attente</option>
+            <option>Validée</option>
+            <option>Refusée</option>
+          </select>
         </div>
-
-        <label>Commentaire
-          <textarea id="commentaire" placeholder="Observation RH..."></textarea>
-        </label>
-
-        <button type="submit">Ajouter</button>
+        <textarea id="absenceCommentaire" placeholder="Commentaire RH"></textarea>
+        <button type="submit">Ajouter absence</button>
       </form>
     </section>
 
-    <section class="stats">
-      <div><strong id="total">0</strong><span>Total absences</span></div>
-      <div><strong id="validees">0</strong><span>Validées</span></div>
-      <div><strong id="attente">0</strong><span>En attente</span></div>
-      <div><strong id="refusees">0</strong><span>Refusées</span></div>
+    <section class="card">
+      <h2>Ajouter une évaluation</h2>
+      <form id="evaluationForm">
+        <div class="grid">
+          <input id="evalNom" placeholder="Nom salarié" required>
+          <input id="evalMatricule" placeholder="Matricule" required>
+          <input id="evalDate" type="date" required>
+          <input id="evalResponsable" placeholder="Responsable">
+          <select id="evalNote">
+            <option value="1">1 / 5</option>
+            <option value="2">2 / 5</option>
+            <option value="3">3 / 5</option>
+            <option value="4">4 / 5</option>
+            <option value="5">5 / 5</option>
+          </select>
+        </div>
+        <textarea id="evalCommentaire" placeholder="Commentaire d'évaluation"></textarea>
+        <button type="submit">Ajouter évaluation</button>
+      </form>
     </section>
 
     <section class="card">
-      <div class="table-header">
-        <h2>Historique des absences</h2>
-        <button class="secondary" onclick="exportCSV()">Exporter CSV</button>
-      </div>
+      <h2>Liste des salariés</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th><th>Matricule</th><th>Poste</th><th>Département</th><th>Statut</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="salariesTable"></tbody>
+      </table>
+    </section>
 
-      <div class="search">
-        <input type="text" id="searchInput" placeholder="Rechercher par nom, matricule ou type..." />
-      </div>
+    <section class="card">
+      <h2>Historique des absences</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th><th>Matricule</th><th>Type</th><th>Début</th><th>Fin</th><th>Statut</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="absencesTable"></tbody>
+      </table>
+    </section>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Matricule</th>
-              <th>Type</th>
-              <th>Début</th>
-              <th>Fin</th>
-              <th>Jours</th>
-              <th>Statut</th>
-              <th>Commentaire</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="absenceTable"></tbody>
-        </table>
-      </div>
+    <section class="card">
+      <h2>Historique des évaluations</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th><th>Matricule</th><th>Date</th><th>Note</th><th>Responsable</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="evaluationsTable"></tbody>
+      </table>
     </section>
   </main>
 
-  <footer>
-    Version test locale - Données stockées dans le navigateur
-  </footer>
-
+  <footer>Données stockées localement dans le navigateur</footer>
   <script src="script.js"></script>
 </body>
 </html>
