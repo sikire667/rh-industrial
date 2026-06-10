@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Outil RH - Gestion des Absences</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Outil RH - Gestion des Absences</h1>
+    <p>Version test gratuite - HTML / CSS / JavaScript</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Ajouter une absence</h2>
+      <form id="absenceForm">
+        <div class="grid">
+          <label>Nom du salarié
+            <input type="text" id="nom" required placeholder="Ex: Khamer Yassine" />
+          </label>
+
+          <label>Matricule
+            <input type="text" id="matricule" required placeholder="Ex: M123456" />
+          </label>
+
+          <label>Type d'absence
+            <select id="type" required>
+              <option value="">Choisir</option>
+              <option>Congé annuel</option>
+              <option>Maladie</option>
+              <option>Absence non justifiée</option>
+              <option>Congé sans solde</option>
+              <option>Retard</option>
+            </select>
+          </label>
+
+          <label>Date début
+            <input type="date" id="dateDebut" required />
+          </label>
+
+          <label>Date fin
+            <input type="date" id="dateFin" required />
+          </label>
+
+          <label>Statut
+            <select id="statut" required>
+              <option>En attente</option>
+              <option>Validée</option>
+              <option>Refusée</option>
+            </select>
+          </label>
+        </div>
+
+        <label>Commentaire
+          <textarea id="commentaire" placeholder="Observation RH..."></textarea>
+        </label>
+
+        <button type="submit">Ajouter</button>
+      </form>
+    </section>
+
+    <section class="stats">
+      <div><strong id="total">0</strong><span>Total absences</span></div>
+      <div><strong id="validees">0</strong><span>Validées</span></div>
+      <div><strong id="attente">0</strong><span>En attente</span></div>
+      <div><strong id="refusees">0</strong><span>Refusées</span></div>
+    </section>
+
+    <section class="card">
+      <div class="table-header">
+        <h2>Historique des absences</h2>
+        <button class="secondary" onclick="exportCSV()">Exporter CSV</button>
+      </div>
+
+      <div class="search">
+        <input type="text" id="searchInput" placeholder="Rechercher par nom, matricule ou type..." />
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Matricule</th>
+              <th>Type</th>
+              <th>Début</th>
+              <th>Fin</th>
+              <th>Jours</th>
+              <th>Statut</th>
+              <th>Commentaire</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="absenceTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Version test locale - Données stockées dans le navigateur
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
