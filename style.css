@@ -124,6 +124,17 @@ body:not(.locked) .login-screen {
   align-items: center;
   gap: 12px;
   margin-bottom: 28px;
+  padding: 8px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background .2s ease, transform .2s ease;
+}
+
+.brand:hover,
+.brand.active {
+  background: rgba(255, 255, 255, .10);
+  transform: translateY(-1px);
 }
 
 .brand > span {
@@ -250,6 +261,50 @@ nav a:hover {
 
 .industrial-hero.page-section.is-active {
   display: flex;
+}
+
+.home-overview {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.home-overview.page-section.is-active {
+  display: grid;
+}
+
+.home-overview article {
+  min-height: 150px;
+  padding: 20px;
+  border: 1px solid rgba(217, 227, 238, .9);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .86)),
+    var(--industrial-bg) center/cover;
+  box-shadow: var(--shadow);
+}
+
+.home-overview span {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 18px;
+  place-items: center;
+  color: #fff;
+  border-radius: 8px;
+  background: var(--teal);
+  font-weight: 800;
+}
+
+.home-overview h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.home-overview p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
 }
 
 .module-pages {
@@ -542,6 +597,7 @@ label {
 
 @media (max-width: 1180px) {
   .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .home-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -585,6 +641,7 @@ label {
 
 @media (max-width: 540px) {
   .stats,
+  .home-overview,
   .form-grid,
   .reports,
   .chart-inputs {
