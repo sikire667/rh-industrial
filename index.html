@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RH Pro Chantier</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="locked">
@@ -101,14 +101,16 @@
     <section id="salaries" class="panel">
       <div class="panel-head">
         <h2>Gestion des salariés</h2>
-        <button id="openEmployeeModal">Ajouter salarié</button>
+        <button id="openEmployeeModal">Ajouter salarié à l'effectif</button>
       </div>
+      <p class="crud-note">Vous pouvez ajouter un salarié ou le supprimer directement de l'effectif. Les chiffres du tableau de bord changent automatiquement.</p>
       <div class="table-wrap">
         <table id="employeeTable">
           <thead>
             <tr>
               <th>Matricule</th>
               <th>Nom</th>
+              <th>Action</th>
               <th>CIN</th>
               <th>Téléphone</th>
               <th>Fonction</th>
@@ -116,7 +118,6 @@
               <th>Chantier</th>
               <th>Contrat</th>
               <th>Statut</th>
-              <th>Action</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -204,6 +205,25 @@
         </div>
       </article>
     </section>
+
+    <section id="courbes" class="panel">
+      <div class="panel-head">
+        <h2>Modifier les courbes</h2>
+        <button id="resetChartsBtn" type="button">Réinitialiser</button>
+      </div>
+      <p class="crud-note">Changez les valeurs puis cliquez sur appliquer. Les graphiques sont mis à jour immédiatement et gardés en mémoire.</p>
+      <div class="chart-editor">
+        <div>
+          <h3>Répartition par chantier</h3>
+          <div id="siteInputs" class="chart-inputs"></div>
+        </div>
+        <div>
+          <h3>Évolution des évaluations</h3>
+          <div id="scoreInputs" class="chart-inputs"></div>
+        </div>
+      </div>
+      <button id="applyChartsBtn" type="button">Appliquer les modifications</button>
+    </section>
   </main>
 
   <dialog id="employeeModal">
@@ -228,6 +248,6 @@
     </form>
   </dialog>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>
