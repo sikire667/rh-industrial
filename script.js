@@ -66,6 +66,7 @@ const pageSections = document.querySelectorAll('.page-section');
 const modulePages = document.querySelector('#modulePages');
 
 const pageTitles = {
+  accueil: 'Accueil RH Pro Chantier',
   dashboard: 'Tableau de bord RH',
   salaries: 'Gestion des salariés',
   projets: 'Gestion des projets',
@@ -82,7 +83,7 @@ const pageTitles = {
 const modulePageNames = ['absences', 'pointage', 'documents', 'evaluations', 'formations', 'epi'];
 
 function showPage(pageName) {
-  const page = pageTitles[pageName] ? pageName : 'dashboard';
+  const page = pageTitles[pageName] ? pageName : 'accueil';
 
   pageSections.forEach((section) => {
     const isActive = section.dataset.page === page;
@@ -496,7 +497,7 @@ navLinks.forEach((link) => {
 });
 
 window.addEventListener('hashchange', () => {
-  showPage(location.hash.replace('#', '') || 'dashboard');
+  showPage(location.hash.replace('#', '') || 'accueil');
 });
 
 loginForm.addEventListener('submit', (event) => {
@@ -685,7 +686,7 @@ renderProjects();
 renderCities();
 renderChartInputs();
 restoreSession();
-showPage(location.hash.replace('#', '') || 'dashboard');
+showPage(location.hash.replace('#', '') || 'accueil');
 
 if (window.Chart) {
   siteChart = new Chart(document.querySelector('#siteChart'), {
