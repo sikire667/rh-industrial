@@ -17,6 +17,7 @@ index.html
 - Gestion des salariés avec recherche instantanée.
 - Ajout et suppression des salariés dans l'effectif.
 - Recalcul automatique de l'effectif total, des actifs, absents/retards et intérimaires.
+- Modification des courbes et graphiques depuis le site avec sauvegarde locale.
 - Export CSV compatible Excel.
 - Modules absences, pointage, documents, discipline, évaluations, formations, EPI, rapports et traçabilité.
 - Connexion administrateur avant l'accès au site.
