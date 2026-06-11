@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RH Pro Chantier</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=10">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="locked">
@@ -39,15 +39,17 @@
       </div>
     </div>
     <nav>
-      <a href="#dashboard" class="active">Tableau de bord</a>
-      <a href="#salaries">Salariés</a>
-      <a href="#absences">Absences</a>
-      <a href="#pointage">Pointage</a>
-      <a href="#documents">Documents</a>
-      <a href="#evaluations">Évaluations</a>
-      <a href="#formations">Formations</a>
-      <a href="#epi">EPI</a>
-      <a href="#rapports">Rapports</a>
+      <a href="#dashboard" class="active" data-page-link="dashboard">Tableau de bord</a>
+      <a href="#salaries" data-page-link="salaries">Salariés</a>
+      <a href="#projets" data-page-link="projets">Projets</a>
+      <a href="#villes" data-page-link="villes">Villes</a>
+      <a href="#absences" data-page-link="absences">Absences</a>
+      <a href="#pointage" data-page-link="pointage">Pointage</a>
+      <a href="#documents" data-page-link="documents">Documents</a>
+      <a href="#evaluations" data-page-link="evaluations">Évaluations</a>
+      <a href="#formations" data-page-link="formations">Formations</a>
+      <a href="#epi" data-page-link="epi">EPI</a>
+      <a href="#rapports" data-page-link="rapports">Rapports</a>
     </nav>
   </aside>
 
@@ -55,7 +57,7 @@
     <header class="topbar">
       <div>
         <p>Logiciel RH chantier et maintenance</p>
-        <h1>Tableau de bord RH</h1>
+        <h1 id="pageTitle">Tableau de bord RH</h1>
       </div>
       <div class="actions">
         <input id="searchInput" type="search" placeholder="Rechercher salarié, CIN, chantier...">
@@ -67,16 +69,25 @@
       </div>
     </header>
 
-    <section id="dashboard" class="stats">
+    <section class="industrial-hero page-section is-active" data-page="dashboard">
+      <div>
+        <p>RH terrain</p>
+        <h2>Chantier & Maintenance Industrielle</h2>
+        <span>Suivi des équipes, projets, villes, pointage et sécurité HSE.</span>
+      </div>
+    </section>
+
+    <section id="dashboard" class="stats page-section is-active" data-page="dashboard">
       <article><span>Effectif total</span><strong id="totalCount">0</strong><small id="totalNote">Effectif actif</small></article>
       <article><span>Présents</span><strong id="presentCount">0</strong><small>Salariés actifs</small></article>
       <article><span>Absents</span><strong id="absentCount">0</strong><small>Absents et retards</small></article>
       <article><span>Intérimaires</span><strong id="interimCount">0</strong><small>Contrats intérim</small></article>
-      <article class="alert"><span>Documents expirés</span><strong>9</strong><small>Action requise</small></article>
+      <article><span>Projets</span><strong id="projectCount">0</strong><small id="projectNote">Chantiers suivis</small></article>
+      <article><span>Villes / Sites</span><strong id="cityCount">0</strong><small id="cityNote">Sites disponibles</small></article>
       <article class="alert"><span>Formations à renouveler</span><strong>14</strong><small>SST/HSE</small></article>
     </section>
 
-    <section class="grid two">
+    <section class="grid two page-section is-active" data-page="dashboard">
       <article class="panel">
         <div class="panel-head">
           <h2>Répartition par chantier</h2>
@@ -98,7 +109,7 @@
       </article>
     </section>
 
-    <section id="salaries" class="panel">
+    <section id="salaries" class="panel page-section" data-page="salaries">
       <div class="panel-head">
         <h2>Gestion des salariés</h2>
         <button id="openEmployeeModal">Ajouter salarié à l'effectif</button>
@@ -125,8 +136,56 @@
       </div>
     </section>
 
-    <section class="grid three">
-      <article id="absences" class="panel module">
+    <section id="projets" class="panel page-section" data-page="projets">
+      <div class="panel-head">
+        <h2>Gestion des projets</h2>
+        <button id="openProjectModal" type="button">Ajouter projet</button>
+      </div>
+      <p class="crud-note">Ajoutez les projets ou chantiers de la société, suivez leur statut et supprimez ceux qui ne sont plus actifs.</p>
+      <div class="table-wrap">
+        <table id="projectTable">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Projet</th>
+              <th>Action</th>
+              <th>Client</th>
+              <th>Ville / Site</th>
+              <th>Responsable</th>
+              <th>Date début</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="villes" class="panel page-section" data-page="villes">
+      <div class="panel-head">
+        <h2>Gestion des villes et sites</h2>
+        <div class="inline-form">
+          <input id="cityName" placeholder="Ajouter une ville ou un site">
+          <button id="addCityBtn" type="button">Ajouter ville</button>
+        </div>
+      </div>
+      <p class="crud-note">Modifiez les villes utilisées dans les projets et les graphiques. Les changements sont sauvegardés automatiquement dans le navigateur.</p>
+      <div class="table-wrap compact-table">
+        <table id="cityTable">
+          <thead>
+            <tr>
+              <th>Ville / Site</th>
+              <th>Modifier</th>
+              <th>Supprimer</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="modulePages" class="grid three module-pages">
+      <article id="absences" class="panel module page-section" data-page="absences">
         <h2>Absences</h2>
         <ul>
           <li>Absence justifiée et non justifiée</li>
@@ -135,7 +194,7 @@
           <li>Taux d'absentéisme automatique</li>
         </ul>
       </article>
-      <article id="pointage" class="panel module">
+      <article id="pointage" class="panel module page-section" data-page="pointage">
         <h2>Pointage</h2>
         <ul>
           <li>Présence quotidienne</li>
@@ -144,7 +203,7 @@
           <li>Rapports mensuels</li>
         </ul>
       </article>
-      <article id="documents" class="panel module">
+      <article id="documents" class="panel module page-section" data-page="documents">
         <h2>Documents</h2>
         <ul>
           <li>Contrats, CIN et diplômes</li>
@@ -153,7 +212,7 @@
           <li>Alertes automatiques</li>
         </ul>
       </article>
-      <article id="evaluations" class="panel module">
+      <article id="evaluations" class="panel module page-section" data-page="evaluations">
         <h2>Évaluations</h2>
         <ul>
           <li>Mensuelle, trimestrielle, annuelle</li>
@@ -162,7 +221,7 @@
           <li>Courbe d'évolution</li>
         </ul>
       </article>
-      <article id="formations" class="panel module">
+      <article id="formations" class="panel module page-section" data-page="formations">
         <h2>Formations</h2>
         <ul>
           <li>SST et HSE</li>
@@ -171,7 +230,7 @@
           <li>Attestations jointes</li>
         </ul>
       </article>
-      <article id="epi" class="panel module">
+      <article id="epi" class="panel module page-section" data-page="epi">
         <h2>EPI</h2>
         <ul>
           <li>Casque, harnais, lunettes</li>
@@ -182,7 +241,7 @@
       </article>
     </section>
 
-    <section id="rapports" class="grid two">
+    <section id="rapports" class="grid two page-section" data-page="rapports">
       <article class="panel">
         <div class="panel-head">
           <h2>Évolution des évaluations</h2>
@@ -206,7 +265,7 @@
       </article>
     </section>
 
-    <section id="courbes" class="panel">
+    <section id="courbes" class="panel page-section" data-page="rapports">
       <div class="panel-head">
         <h2>Modifier les courbes</h2>
         <button id="resetChartsBtn" type="button">Réinitialiser</button>
@@ -248,6 +307,25 @@
     </form>
   </dialog>
 
-  <script src="script.js?v=4"></script>
+  <dialog id="projectModal">
+    <form id="projectForm" class="modal">
+      <div class="panel-head">
+        <h2>Nouveau projet</h2>
+        <button id="closeProjectModal" type="button">Fermer</button>
+      </div>
+      <div class="form-grid">
+        <label>Code projet<input id="projectCode" placeholder="PRJ-001" required></label>
+        <label>Nom du projet<input id="projectName" placeholder="Maintenance site industriel" required></label>
+        <label>Client<input id="projectClient" placeholder="Client / société" required></label>
+        <label>Ville / Site<select id="projectSite" required></select></label>
+        <label>Responsable<input id="projectManager" placeholder="Chef projet" required></label>
+        <label>Date début<input id="projectStart" type="date"></label>
+        <label>Statut<select id="projectStatus"><option>En cours</option><option>Planifié</option><option>Terminé</option><option>Suspendu</option></select></label>
+      </div>
+      <button type="submit">Enregistrer le projet</button>
+    </form>
+  </dialog>
+
+  <script src="script.js?v=10"></script>
 </body>
 </html>
