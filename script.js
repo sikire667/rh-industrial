@@ -14,7 +14,21 @@ const defaultEmployees = [
 ];
 
 const employeeStorageKey = 'rhEmployees';
+const chartStorageKey = 'rhChartData';
+const defaultChartData = {
+  sites: {
+    labels: ['Tanger', 'Jorf', 'Safi', 'Casa', 'Rabat'],
+    values: [74, 58, 43, 39, 34]
+  },
+  scores: {
+    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+    values: [3.6, 3.8, 3.7, 4.1, 4.0, 4.3]
+  }
+};
 let employees = loadEmployees();
+let chartData = loadChartData();
+let siteChart;
+let scoreChart;
 
 const tbody = document.querySelector('#employeeTable tbody');
 const searchInput = document.querySelector('#searchInput');
@@ -24,6 +38,10 @@ const loginForm = document.querySelector('#loginForm');
 const loginError = document.querySelector('#loginError');
 const currentUser = document.querySelector('#currentUser');
 const logoutBtn = document.querySelector('#logoutBtn');
+const siteInputs = document.querySelector('#siteInputs');
+const scoreInputs = document.querySelector('#scoreInputs');
+const applyChartsBtn = document.querySelector('#applyChartsBtn');
+const resetChartsBtn = document.querySelector('#resetChartsBtn');
 
 function loadEmployees() {
   const saved = localStorage.getItem(employeeStorageKey);
@@ -39,6 +57,27 @@ function loadEmployees() {
 
 function saveEmployees() {
   localStorage.setItem(employeeStorageKey, JSON.stringify(employees));
+}
+
+function cloneData(data) {
+  return JSON.parse(JSON.stringify(data));
+}
+
+function loadChartData() {
+  const saved = localStorage.getItem(chartStorageKey);
+  if (!saved) return cloneData(defaultChartData);
+
+  try {
+    const parsed = JSON.parse(saved);
+    if (!parsed.sites || !parsed.scores) return cloneData(defaultChartData);
+    return parsed;
+  } catch (error) {
+    return cloneData(defaultChartData);
+  }
+}
+
+function saveChartData() {
+  localStorage.setItem(chartStorageKey, JSON.stringify(chartData));
 }
 
 function getVisibleEmployees() {
@@ -59,6 +98,158 @@ function updateStats() {
   document.querySelector('#absentCount').textContent = absent;
   document.querySelector('#interimCount').textContent = interim;
   document.querySelector('#totalNote').textContent = `${total} salarié${total > 1 ? 's' : ''} dans l'effectif`;
+}
+
+function renderChartInputs() {
+  siteInputs.innerHTML = chartData.sites.labels.map((label, index) => `
+    <label>${label}
+      <input class="chart-value" data-chart="sites" data-index="${index}" type="number" min="0" step="1" value="${chartData.sites.values[index]}">
+    </label>
+  `).join('');
+
+  scoreInputs.innerHTML = chartData.scores.labels.map((label, index) => `
+    <label>${label}
+      <input class="chart-value" data-chart="scores" data-index="${index}" type="number" min="1" max="5" step="0.1" value="${chartData.scores.values[index]}">
+    </label>
+  `).join('');
+}
+
+function applyChartInputs() {
+  document.querySelectorAll('.chart-value').forEach((input) => {
+    const chart = input.dataset.chart;
+    const index = Number(input.dataset.index);
+    const value = Number(input.value);
+    if (!Number.isFinite(value)) return;
+
+    if (chart === 'sites') {
+      chartData.sites.values[index] = Math.max(0, Math.round(value));
+    }
+
+    if (chart === 'scores') {
+      chartData.scores.values[index] = Math.min(5, Math.max(1, Number(value.toFixed(1))));
+    }
+  });
+
+  saveChartData();
+  renderChartInputs();
+  updateCharts();
+}
+
+function updateCharts() {
+  if (siteChart) {
+    siteChart.data.labels = chartData.sites.labels;
+    siteChart.data.datasets[0].data = chartData.sites.values;
+    siteChart.update();
+  }
+
+  if (scoreChart) {
+    scoreChart.data.labels = chartData.scores.labels;
+    scoreChart.data.datasets[0].data = chartData.scores.values;
+    scoreChart.update();
+  }
+
+  if (!window.Chart) {
+    drawFallbackCharts();
+  }
+}
+
+function prepareCanvas(canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const width = Math.max(320, Math.floor(rect.width || canvas.parentElement.clientWidth || 520));
+  const height = 260;
+  canvas.width = width;
+  canvas.height = height;
+  return { ctx: canvas.getContext('2d'), width, height };
+}
+
+function drawFallbackBarChart() {
+  const canvas = document.querySelector('#siteChart');
+  if (!canvas) return;
+
+  const { ctx, width, height } = prepareCanvas(canvas);
+  const padding = 42;
+  const values = chartData.sites.values;
+  const labels = chartData.sites.labels;
+  const max = Math.max(...values, 1);
+  const barWidth = (width - padding * 2) / values.length * .64;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = '#d9e3ee';
+  ctx.beginPath();
+  ctx.moveTo(padding, 22);
+  ctx.lineTo(padding, height - padding);
+  ctx.lineTo(width - 18, height - padding);
+  ctx.stroke();
+
+  values.forEach((value, index) => {
+    const x = padding + index * ((width - padding * 2) / values.length) + 14;
+    const barHeight = (value / max) * (height - padding - 42);
+    const y = height - padding - barHeight;
+    ctx.fillStyle = ['#1d4ed8', '#0f8f9d', '#16803c', '#d97706', '#c2410c'][index] || '#1d4ed8';
+    ctx.fillRect(x, y, barWidth, barHeight);
+    ctx.fillStyle = '#152033';
+    ctx.font = '12px Segoe UI, Arial';
+    ctx.fillText(String(value), x + 4, y - 7);
+    ctx.fillStyle = '#66758a';
+    ctx.fillText(labels[index], x - 4, height - 16);
+  });
+}
+
+function drawFallbackLineChart() {
+  const canvas = document.querySelector('#scoreChart');
+  if (!canvas) return;
+
+  const { ctx, width, height } = prepareCanvas(canvas);
+  const padding = 42;
+  const values = chartData.scores.values;
+  const labels = chartData.scores.labels;
+  const plotWidth = width - padding * 2;
+  const plotHeight = height - padding - 28;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = '#d9e3ee';
+  ctx.beginPath();
+  ctx.moveTo(padding, 22);
+  ctx.lineTo(padding, height - padding);
+  ctx.lineTo(width - 18, height - padding);
+  ctx.stroke();
+
+  const points = values.map((value, index) => ({
+    x: padding + (index / Math.max(values.length - 1, 1)) * plotWidth,
+    y: height - padding - ((value - 1) / 4) * plotHeight
+  }));
+
+  ctx.strokeStyle = '#1d4ed8';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  });
+  ctx.stroke();
+
+  points.forEach((point, index) => {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#1d4ed8';
+    ctx.stroke();
+    ctx.fillStyle = '#152033';
+    ctx.font = '12px Segoe UI, Arial';
+    ctx.fillText(String(values[index]), point.x - 8, point.y - 12);
+    ctx.fillStyle = '#66758a';
+    ctx.fillText(labels[index], point.x - 10, height - 16);
+  });
+}
+
+function drawFallbackCharts() {
+  drawFallbackBarChart();
+  drawFallbackLineChart();
 }
 
 function normalizeLogin(value) {
@@ -104,6 +295,7 @@ function renderEmployees(rows = getVisibleEmployees()) {
       <tr>
         <td>${employee[0]}</td>
         <td>${employee[1]}</td>
+        <td><button class="danger-btn" type="button" data-delete-index="${index}">Supprimer</button></td>
         <td>${employee[2]}</td>
         <td>${employee[3]}</td>
         <td>${employee[4]}</td>
@@ -111,7 +303,6 @@ function renderEmployees(rows = getVisibleEmployees()) {
         <td>${employee[6]}</td>
         <td><span class="badge">${employee[7]}</span></td>
         <td class="${statusClass}">${employee[8]}</td>
-        <td><button class="danger-btn" type="button" data-delete-index="${index}">Supprimer</button></td>
       </tr>
     `;
   }).join('');
@@ -199,41 +390,56 @@ document.querySelector('#exportBtn').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
+applyChartsBtn.addEventListener('click', applyChartInputs);
+
+resetChartsBtn.addEventListener('click', () => {
+  chartData = cloneData(defaultChartData);
+  saveChartData();
+  renderChartInputs();
+  updateCharts();
+});
+
 renderEmployees();
+renderChartInputs();
 restoreSession();
 
-new Chart(document.querySelector('#siteChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Tanger', 'Jorf', 'Safi', 'Casa', 'Rabat'],
-    datasets: [{
-      label: 'Effectif',
-      data: [74, 58, 43, 39, 34],
-      backgroundColor: ['#1d4ed8', '#0f8f9d', '#16803c', '#d97706', '#c2410c']
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-  }
-});
+if (window.Chart) {
+  siteChart = new Chart(document.querySelector('#siteChart'), {
+    type: 'bar',
+    data: {
+      labels: chartData.sites.labels,
+      datasets: [{
+        label: 'Effectif',
+        data: chartData.sites.values,
+        backgroundColor: ['#1d4ed8', '#0f8f9d', '#16803c', '#d97706', '#c2410c']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
 
-new Chart(document.querySelector('#scoreChart'), {
-  type: 'line',
-  data: {
-    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
-    datasets: [{
-      label: 'Score moyen',
-      data: [3.6, 3.8, 3.7, 4.1, 4.0, 4.3],
-      borderColor: '#1d4ed8',
-      backgroundColor: 'rgba(29, 78, 216, .12)',
-      fill: true,
-      tension: .35
-    }]
-  },
-  options: {
-    responsive: true,
-    scales: { y: { beginAtZero: true, max: 5 } }
-  }
-});
+  scoreChart = new Chart(document.querySelector('#scoreChart'), {
+    type: 'line',
+    data: {
+      labels: chartData.scores.labels,
+      datasets: [{
+        label: 'Score moyen',
+        data: chartData.scores.values,
+        borderColor: '#1d4ed8',
+        backgroundColor: 'rgba(29, 78, 216, .12)',
+        fill: true,
+        tension: .35
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, max: 5 } }
+    }
+  });
+} else {
+  drawFallbackCharts();
+  window.addEventListener('resize', drawFallbackCharts);
+}
