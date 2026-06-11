@@ -13,7 +13,17 @@ const defaultEmployees = [
   ['EMP-006', 'Nadia Rami', 'KL123789', '0600000006', 'Magasinière EPI', 'Chantier Pro', 'Site Jorf', 'CDD', 'Retard']
 ];
 
+const defaultProjects = [
+  ['PRJ-001', 'Maintenance convoyeurs', 'OCP', 'Site Jorf', 'Karim Ouali', '2026-01-15', 'En cours'],
+  ['PRJ-002', 'Arrêt technique fours', 'Indus Maint', 'Site Safi', 'Sara Bennani', '2026-03-01', 'Planifié'],
+  ['PRJ-003', 'Renfort chantier Tanger', 'Chantier Pro', 'Site Tanger', 'Yassine Amrani', '2026-02-10', 'En cours']
+];
+
+const defaultCities = ['Site Jorf', 'Site Safi', 'Site Tanger', 'Casablanca', 'Rabat'];
+
 const employeeStorageKey = 'rhEmployees';
+const projectStorageKey = 'rhProjects';
+const cityStorageKey = 'rhCities';
 const chartStorageKey = 'rhChartData';
 const defaultChartData = {
   sites: {
@@ -26,14 +36,20 @@ const defaultChartData = {
   }
 };
 let employees = loadEmployees();
+let projects = loadProjects();
+let cities = loadCities();
 let chartData = loadChartData();
 let siteChart;
 let scoreChart;
 
 const tbody = document.querySelector('#employeeTable tbody');
+const projectTbody = document.querySelector('#projectTable tbody');
+const cityTbody = document.querySelector('#cityTable tbody');
 const searchInput = document.querySelector('#searchInput');
 const modal = document.querySelector('#employeeModal');
+const projectModal = document.querySelector('#projectModal');
 const employeeForm = document.querySelector('#employeeForm');
+const projectForm = document.querySelector('#projectForm');
 const loginForm = document.querySelector('#loginForm');
 const loginError = document.querySelector('#loginError');
 const currentUser = document.querySelector('#currentUser');
@@ -42,6 +58,52 @@ const siteInputs = document.querySelector('#siteInputs');
 const scoreInputs = document.querySelector('#scoreInputs');
 const applyChartsBtn = document.querySelector('#applyChartsBtn');
 const resetChartsBtn = document.querySelector('#resetChartsBtn');
+const cityNameInput = document.querySelector('#cityName');
+const addCityBtn = document.querySelector('#addCityBtn');
+const pageTitle = document.querySelector('#pageTitle');
+const navLinks = document.querySelectorAll('[data-page-link]');
+const pageSections = document.querySelectorAll('.page-section');
+const modulePages = document.querySelector('#modulePages');
+
+const pageTitles = {
+  dashboard: 'Tableau de bord RH',
+  salaries: 'Gestion des salariés',
+  projets: 'Gestion des projets',
+  villes: 'Gestion des villes et sites',
+  absences: 'Gestion des absences',
+  pointage: 'Gestion du pointage',
+  documents: 'Gestion documentaire',
+  evaluations: 'Gestion des évaluations',
+  formations: 'Gestion des formations',
+  epi: 'Gestion des EPI',
+  rapports: 'Rapports et courbes RH'
+};
+
+const modulePageNames = ['absences', 'pointage', 'documents', 'evaluations', 'formations', 'epi'];
+
+function showPage(pageName) {
+  const page = pageTitles[pageName] ? pageName : 'dashboard';
+
+  pageSections.forEach((section) => {
+    const isActive = section.dataset.page === page;
+    section.classList.toggle('is-active', isActive);
+    section.hidden = !isActive;
+  });
+
+  navLinks.forEach((link) => {
+    link.classList.toggle('active', link.dataset.pageLink === page);
+  });
+
+  modulePages.classList.toggle('is-active', modulePageNames.includes(page));
+  pageTitle.textContent = pageTitles[page];
+
+  if (location.hash !== `#${page}`) {
+    history.replaceState(null, '', `#${page}`);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  setTimeout(updateCharts, 80);
+}
 
 function loadEmployees() {
   const saved = localStorage.getItem(employeeStorageKey);
@@ -57,6 +119,38 @@ function loadEmployees() {
 
 function saveEmployees() {
   localStorage.setItem(employeeStorageKey, JSON.stringify(employees));
+}
+
+function loadProjects() {
+  const saved = localStorage.getItem(projectStorageKey);
+  if (!saved) return [...defaultProjects];
+
+  try {
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [...defaultProjects];
+  } catch (error) {
+    return [...defaultProjects];
+  }
+}
+
+function saveProjects() {
+  localStorage.setItem(projectStorageKey, JSON.stringify(projects));
+}
+
+function loadCities() {
+  const saved = localStorage.getItem(cityStorageKey);
+  if (!saved) return [...defaultCities];
+
+  try {
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [...defaultCities];
+  } catch (error) {
+    return [...defaultCities];
+  }
+}
+
+function saveCities() {
+  localStorage.setItem(cityStorageKey, JSON.stringify(cities));
 }
 
 function cloneData(data) {
@@ -92,17 +186,23 @@ function updateStats() {
   const active = employees.filter((employee) => employee[8] === 'Actif').length;
   const absent = employees.filter((employee) => employee[8] === 'Absent' || employee[8] === 'Retard').length;
   const interim = employees.filter((employee) => employee[7] === 'Intérim').length;
+  const activeProjects = projects.filter((project) => project[6] !== 'Terminé').length;
 
   document.querySelector('#totalCount').textContent = total;
   document.querySelector('#presentCount').textContent = active;
   document.querySelector('#absentCount').textContent = absent;
   document.querySelector('#interimCount').textContent = interim;
+  document.querySelector('#projectCount').textContent = projects.length;
+  document.querySelector('#cityCount').textContent = cities.length;
   document.querySelector('#totalNote').textContent = `${total} salarié${total > 1 ? 's' : ''} dans l'effectif`;
+  document.querySelector('#projectNote').textContent = `${activeProjects} projet${activeProjects > 1 ? 's' : ''} actif${activeProjects > 1 ? 's' : ''}`;
+  document.querySelector('#cityNote').textContent = `${cities.length} ville${cities.length > 1 ? 's' : ''} / site${cities.length > 1 ? 's' : ''}`;
 }
 
 function renderChartInputs() {
   siteInputs.innerHTML = chartData.sites.labels.map((label, index) => `
-    <label>${label}
+    <label>Ville ${index + 1}
+      <input class="chart-label" data-chart="sites" data-index="${index}" type="text" value="${label}">
       <input class="chart-value" data-chart="sites" data-index="${index}" type="number" min="0" step="1" value="${chartData.sites.values[index]}">
     </label>
   `).join('');
@@ -115,6 +215,23 @@ function renderChartInputs() {
 }
 
 function applyChartInputs() {
+  document.querySelectorAll('.chart-label').forEach((input) => {
+    const chart = input.dataset.chart;
+    const index = Number(input.dataset.index);
+    const value = input.value.trim();
+    if (!value) return;
+
+    if (chart === 'sites') {
+      chartData.sites.labels[index] = value;
+      if (!cities.includes(value)) {
+        cities.push(value);
+        saveCities();
+        renderCities();
+        renderProjectSiteOptions();
+      }
+    }
+  });
+
   document.querySelectorAll('.chart-value').forEach((input) => {
     const chart = input.dataset.chart;
     const index = Number(input.dataset.index);
@@ -309,8 +426,77 @@ function renderEmployees(rows = getVisibleEmployees()) {
   updateStats();
 }
 
+function renderProjects() {
+  projectTbody.innerHTML = projects.map((project, index) => {
+    const statusClass = project[6] === 'Terminé' ? 'ok' : project[6] === 'Suspendu' ? 'late' : 'project-active';
+    return `
+      <tr>
+        <td>${project[0]}</td>
+        <td>${project[1]}</td>
+        <td><button class="danger-btn" type="button" data-delete-project="${index}">Supprimer</button></td>
+        <td>${project[2]}</td>
+        <td>${project[3]}</td>
+        <td>${project[4]}</td>
+        <td>${project[5] || '-'}</td>
+        <td class="${statusClass}">${project[6]}</td>
+      </tr>
+    `;
+  }).join('');
+  updateStats();
+}
+
+function renderProjectSiteOptions() {
+  const selected = document.querySelector('#projectSite').value;
+  document.querySelector('#projectSite').innerHTML = cities
+    .map((city) => `<option value="${city}">${city}</option>`)
+    .join('');
+
+  if (cities.includes(selected)) {
+    document.querySelector('#projectSite').value = selected;
+  }
+}
+
+function renderCities() {
+  cityTbody.innerHTML = cities.map((city, index) => `
+    <tr>
+      <td><input class="city-edit" data-city-index="${index}" value="${city}"></td>
+      <td><button class="save-btn" type="button" data-save-city="${index}">Enregistrer</button></td>
+      <td><button class="danger-btn" type="button" data-delete-city="${index}">Supprimer</button></td>
+    </tr>
+  `).join('');
+  updateStats();
+}
+
+function renameCity(index, newName) {
+  const oldName = cities[index];
+  if (!oldName || !newName) return;
+
+  cities[index] = newName;
+  projects = projects.map((project) => project[3] === oldName ? [...project.slice(0, 3), newName, ...project.slice(4)] : project);
+  chartData.sites.labels = chartData.sites.labels.map((label) => label === oldName ? newName : label);
+  saveCities();
+  saveProjects();
+  saveChartData();
+  renderCities();
+  renderProjects();
+  renderProjectSiteOptions();
+  renderChartInputs();
+  updateCharts();
+}
+
 searchInput.addEventListener('input', () => {
   renderEmployees();
+});
+
+navLinks.forEach((link) => {
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    showPage(link.dataset.pageLink);
+  });
+});
+
+window.addEventListener('hashchange', () => {
+  showPage(location.hash.replace('#', '') || 'dashboard');
 });
 
 loginForm.addEventListener('submit', (event) => {
@@ -333,6 +519,8 @@ logoutBtn.addEventListener('click', lockSite);
 
 document.querySelector('#openEmployeeModal').addEventListener('click', () => modal.showModal());
 document.querySelector('#closeEmployeeModal').addEventListener('click', () => modal.close());
+document.querySelector('#openProjectModal').addEventListener('click', () => projectModal.showModal());
+document.querySelector('#closeProjectModal').addEventListener('click', () => projectModal.close());
 
 employeeForm.addEventListener('submit', (event) => {
   event.preventDefault();
@@ -376,6 +564,98 @@ tbody.addEventListener('click', (event) => {
   renderEmployees();
 });
 
+projectForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const project = [
+    document.querySelector('#projectCode').value.trim(),
+    document.querySelector('#projectName').value.trim(),
+    document.querySelector('#projectClient').value.trim(),
+    document.querySelector('#projectSite').value.trim(),
+    document.querySelector('#projectManager').value.trim(),
+    document.querySelector('#projectStart').value,
+    document.querySelector('#projectStatus').value
+  ];
+
+  const projectExists = projects.some((row) => row[0].toLowerCase() === project[0].toLowerCase());
+  if (projectExists) {
+    alert('Ce code projet existe deja.');
+    return;
+  }
+
+  projects.push(project);
+  saveProjects();
+  projectForm.reset();
+  projectModal.close();
+  renderProjects();
+});
+
+projectTbody.addEventListener('click', (event) => {
+  const deleteButton = event.target.closest('[data-delete-project]');
+  if (!deleteButton) return;
+
+  const index = Number(deleteButton.dataset.deleteProject);
+  if (!projects[index]) return;
+
+  projects.splice(index, 1);
+  saveProjects();
+  renderProjects();
+});
+
+addCityBtn.addEventListener('click', () => {
+  const city = cityNameInput.value.trim();
+  if (!city) return;
+
+  const exists = cities.some((item) => item.toLowerCase() === city.toLowerCase());
+  if (exists) {
+    alert('Cette ville existe deja.');
+    return;
+  }
+
+  cities.push(city);
+  saveCities();
+  cityNameInput.value = '';
+  renderCities();
+  renderProjectSiteOptions();
+});
+
+cityNameInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    addCityBtn.click();
+  }
+});
+
+cityTbody.addEventListener('click', (event) => {
+  const saveButton = event.target.closest('[data-save-city]');
+  const deleteButton = event.target.closest('[data-delete-city]');
+
+  if (saveButton) {
+    const index = Number(saveButton.dataset.saveCity);
+    const input = cityTbody.querySelector(`[data-city-index="${index}"]`);
+    renameCity(index, input.value.trim());
+    return;
+  }
+
+  if (deleteButton) {
+    const index = Number(deleteButton.dataset.deleteCity);
+    if (!cities[index]) return;
+
+    const city = cities[index];
+    cities.splice(index, 1);
+    projects = projects.map((project) => project[3] === city ? [...project.slice(0, 3), '', ...project.slice(4)] : project);
+    chartData.sites.labels = chartData.sites.labels.filter((label) => label !== city);
+    chartData.sites.values = chartData.sites.values.slice(0, chartData.sites.labels.length);
+    saveCities();
+    saveProjects();
+    saveChartData();
+    renderCities();
+    renderProjects();
+    renderProjectSiteOptions();
+    renderChartInputs();
+    updateCharts();
+  }
+});
+
 document.querySelector('#exportBtn').addEventListener('click', () => {
   const csv = [
     ['Matricule', 'Nom', 'CIN', 'Téléphone', 'Fonction', 'Société', 'Chantier', 'Contrat', 'Statut'],
@@ -400,8 +680,12 @@ resetChartsBtn.addEventListener('click', () => {
 });
 
 renderEmployees();
+renderProjectSiteOptions();
+renderProjects();
+renderCities();
 renderChartInputs();
 restoreSession();
+showPage(location.hash.replace('#', '') || 'dashboard');
 
 if (window.Chart) {
   siteChart = new Chart(document.querySelector('#siteChart'), {
