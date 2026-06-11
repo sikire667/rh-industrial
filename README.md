@@ -16,6 +16,8 @@ index.html
 - Graphiques pour chantiers et évaluations.
 - Gestion des salariés avec recherche instantanée.
 - Ajout et suppression des salariés dans l'effectif.
+- Ajout et suppression des projets/chantiers avec compteur dédié.
+- Ajout, modification et suppression des villes/sites utilisés dans les projets.
 - Recalcul automatique de l'effectif total, des actifs, absents/retards et intérimaires.
 - Modification des courbes et graphiques depuis le site avec sauvegarde locale.
 - Export CSV compatible Excel.
